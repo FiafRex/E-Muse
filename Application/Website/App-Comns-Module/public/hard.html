@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <title>Meditation Session</title>
+  <style>
+    #timer {
+      position: fixed; /* Timer at the top of the screen */
+      top: 10px; /* Position from the top */
+      left: 50%; /* Center horizontally */
+      transform: translateX(-50%); /* Center alignment fix */
+      font-size: 24px; /* Larger font size for visibility */
+      color: white; /* White color for contrast */
+      z-index: 1100; /* Higher z-index to ensure visibility over other content */
+    }
+    .navbar-nav {
+      flex-direction: row;
+      text-align:right;
+    }
+    .nav-item {
+      padding: 0 10px;
+    }
+    .nav-link {
+      color: white !important;
+    }
+    
+    </style>
+    <body>
+      <nav class="navbar bg-dark text-white mb-3">
+        <div class="container-fluid">
+          <span class="navbar-brand mb-0 h1">E-MUSE</span>
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="http://localhost:3000/landing">Home</a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link" href="http://localhost:5000">Exercise Page</a>
+          </li>
+        </div>
+  <div id="timer">60:00</div> <!-- Visual Timer Display -->
+
+  <!-- Prompt Modal -->
+  <div id="promptModal" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1050;">
+    <div style="background: rgb(0, 0, 0); padding: 20px; border-radius: 5px; text-align: center;">
+      <p>Are you ready to begin?</p>
+      <button id="startButton" class="btn btn-primary">YES</button>
+    </div>
+  </div>
+
+  <!-- Fullscreen YouTube Video -->
+  <iframe id="youtubeVideo" width="100%" height="100%" src="https://www.youtube.com/embed/1rTs8yxH89c?controls=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen style="display:none; position: fixed; top: 56px; left: 0; bottom: 0; right: 0;"></iframe>
+
+  <script>
+    document.getElementById('startButton').addEventListener('click', function() {
+      document.getElementById('promptModal').style.display = 'none';
+      document.getElementById('youtubeVideo').style.display = 'block';
+      document.getElementById('youtubeVideo').src += "&autoplay=1";
+      startCountdown(3600); // Start a 60-minute countdown
+    });
+
+    function startCountdown(duration) {
+      var timer = duration, minutes, seconds;
+      var interval = setInterval(function () {
+        minutes = parseInt(timer / 60, 10);
+        seconds = parseInt(timer % 60, 10);
+
+        minutes = minutes < 10 ? "0" + minutes : minutes;
+        seconds = seconds < 10 ? "0" + seconds : seconds;
+
+        document.getElementById('timer').textContent = minutes + ":" + seconds;
+
+        if (--timer < 0) {
+          clearInterval(interval);
+          window.location.href = 'finished.html'; // Redirect when timer is done
+        }
+      }, 1000);
+    }
+  </script>
+</body>
+</html>

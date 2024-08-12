@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yoga Routine</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body, html {
+            background-color: red;
+            height: 100%;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .full-height {
+            height: 100vh;
+        }
+        .bg-gradient {
+            background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+            color: white;
+        }
+        iframe {
+            width: 100%;
+            height: 60vh;
+            border: 5px solid rgb(59, 8, 8);
+        }
+        .navbar-text {
+            flex-grow: 1;
+            text-align: center;
+        }
+        .navbar-nav {
+            flex-direction: row;
+        }
+        .nav-item {
+            padding: 0 10px;
+        }
+        .nav-link {
+            color: white !important;
+        }
+        #timer {
+            font-size: 1.5em;
+        }
+        .message {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.2em;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 5px 20px;
+            border-radius: 10px;
+            display: none;
+        }
+        .stop-button {
+            background-color: white;
+            filter: opacity(50%);
+            position: absolute;
+            top: 83vh;
+            left: 75vh;
+            width: 500px;
+            height: 50px;
+            border: 5px solid black;
+            transition: .5s;
+        }
+        .stop-button:hover {
+            width: 500px;
+            height: 70px;
+            background-color: rgb(24, 24, 177);
+            color: white;
+            filter: opacity(100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-gradient full-height">
+        <nav class="navbar bg-dark text-white mb-3">
+            <div class="container-fluid">
+                <span class="navbar-brand mb-0 h1">E-MUSE</span>
+                <span id="timer" class="navbar-text">Time: 00:00:00</span>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="http://localhost:3000/landing">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="http://localhost:5000">Exercise Page</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <div class="container mt-5">
+            <h1>Welcome to Your Yoga Session</h1>
+            <p>Prepare to relax and enhance your flexibility with our guided yoga routines.</p>
+            <iframe id="yogaVideo" src="https://www.youtube.com/embed/EbnH3VHzhu8?enablejsapi=1&autoplay=1&loop=1&playlist=EbnH3VHzhu8&controls=0&rel=0&showinfo=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            <button class="btn stop-button" onclick="stopTimer()">Stop</button>
+            <div id="motivationalMessage" class="message"></div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="timeModal" tabindex="-1" aria-labelledby="timeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="timeModalLabel">Session Ended</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Time elapsed: <span id="finalTime">00:00:00</span><br>
+                    Would you like to...
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="tryAgain()">Try Again</button>
+                    <button type="button" class="btn btn-secondary" onclick="goBack()">Go to exercise page</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var startTime, timer, timerRunning = false;
+        var messages = ['Keep calm', 'Feel the stretch', 'You are doing great!'];
+        var messageIndex = 0;
+
+        var player;
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('yogaVideo', {
+                events: {
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+        
+        function onPlayerStateChange(event) {
+            if (event.data == YT.PlayerState.PLAYING && !timerRunning) {
+                startTimer();
+            }
+        }
+        
+        function startTimer() {
+            startTime = new Date();
+            timer = setInterval(updateTimer, 1000);
+            timerRunning = true;
+            showMessage();
+        }
+        
+        function updateTimer() {
+            var currentTime = new Date();
+            var elapsedTime = new Date(currentTime - startTime);
+            var hours = elapsedTime.getUTCHours().toString().padStart(2, '0');
+            var minutes = elapsedTime.getUTCMinutes().toString().padStart(2, '0');
+            var seconds = elapsedTime.getUTCSeconds().toString().padStart(2, '0');
+            document.getElementById('timer').textContent = 'Time: ' + hours + ':' + minutes + ':' + seconds;
+        }
+        
+        function stopTimer() {
+            clearInterval(timer);
+            timerRunning = false;
+            document.getElementById('finalTime').textContent = document.getElementById('timer').textContent.split(' ')[1];
+            new bootstrap.Modal(document.getElementById('timeModal')).show();
+        }
+        
+        function tryAgain() {
+            // Reset the timer display
+            document.getElementById('timer').textContent = 'Time: 00:00:00';
+            // Seek video to start
+            player.seekTo(0);
+            player.playVideo();
+            // Restart the timer
+            startTimer();
+        }
+        
+        function goBack() {
+            window.location.href = "http://localhost:5000";
+        }
+        // Polling function to check for redirect every 5 seconds
+function checkForRedirect() {
+    fetch('/check-redirect')
+        .then(response => response.json())
+        .then(data => {
+            if (data.redirect) {
+                window.location.href = data.url; // Redirect to the URL specified by the server
+            }
+        })
+        .catch(error => console.error('Error checking for redirect:', error));
+  }
+  
+  // Start polling
+  setInterval(checkForRedirect, 1000);
+    </script>
+</body>
+</html>
